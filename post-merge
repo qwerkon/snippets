@@ -1,0 +1,22 @@
+#/usr/bin/env bash
+
+# git hook post-merge
+# 
+# set of rules that facilitate work with Laravel
+#
+# author Bielecki Krzysztof
+
+# get list from last pull
+changedFiles="$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)"
+
+# check changes in composer
+echo "$changedFiles" | grep --quiet -i "composer.json" && eval "composer update"
+# check changes in bower
+echo "$changedFiles" | grep --quiet -i "bower.json" && eval "bower update"
+# check new migrations
+echo "$changedFiles" | grep --quiet -i "migrations" && eval "php artisan migrate"
+# check changes or new files for grunt
+echo "$changedFiles" | grep --quiet -E -i "\.(.css|less|js)" && eval "grunt"
+# check changes in NodeJS
+echo "$changedFiles" | grep --quiet -i "package.json" && eval "npm update"
+
