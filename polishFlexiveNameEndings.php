@@ -1,3 +1,5 @@
+<?php
+
 function polishFlexiveNameEndings($firstName)
 {
     $str = "";
