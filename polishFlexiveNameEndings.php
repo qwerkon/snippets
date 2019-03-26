@@ -1,5 +1,11 @@
 <?php
-
+/**
+* Find out flexive name ending and bearded gender for Polish language
+*
+* @param string $firstName
+*
+* @return string
+*/
 function polishFlexiveNameEndings($firstName)
 {
     $str = "";
