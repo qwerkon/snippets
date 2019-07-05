@@ -10,7 +10,7 @@
 changedFiles="$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)"
 
 # check changes in composer
-echo "$changedFiles" | grep --quiet -i "composer.json" && eval "composer update"
+echo "$changedFiles" | grep --quiet -i "composer.json" && eval "composer install"
 # check changes in bower
 echo "$changedFiles" | grep --quiet -i "bower.json" && eval "bower update"
 # check new migrations
