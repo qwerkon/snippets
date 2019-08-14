@@ -9,4 +9,4 @@ The goal of this repository is to have a centralized location for small code sni
 1. pre-commit-psr - Git hook to validate modified code against PSR-2 code standard
 
 ## License
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The MIT License (MIT). Please see [License File](LICENSE) for more information.
