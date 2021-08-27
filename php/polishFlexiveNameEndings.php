@@ -14,7 +14,7 @@ function polishFlexiveNameEndings($firstName)
     $parts = explode(' ', $firstName);
     if (count($parts) > 1) {
         foreach ($parts AS $iK => $firstName)
-            $parts[$iK] = odmianaImion($firstName);
+            $parts[$iK] = polishFlexiveNameEndings($firstName);
 
         return implode(' ', $parts);
     } else {
