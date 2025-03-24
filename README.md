@@ -1,6 +1,9 @@
 # Snippets
 The goal of this repository is to have a centralized location for small code snippets and recipes.
 
+## Shell
+1. publish.sh -  script automates the process of publish changes for Laravel application (set `chmod +x deploy.sh` for correct work of script)
+
 ## PHP
 1. polishFlexiveNameEndings.php - Find out flexive name ending and bearded gender for Polish language
 
