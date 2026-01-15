@@ -1,6 +1,6 @@
-# zapisz do ~/.local/bin/boost-mcp i nadaj uprawnieniach chmod +x ~/.local/bin/boost-mcp
-
 #!/usr/bin/env bash
+# zapisz do ~/.local/bin/boost-mcp i nadaj uprawnieniach chmod +x ~/.local/bin/boost-mcp
+# utwórz również plik .codex/container lub .boost-containe w którym znajdować sie będzie nazwa kontenera Docker do uruchomienia
 
 set -euo pipefail
 
