@@ -1,0 +1,5 @@
+[mcp_servers.laravel-boost]
+command = "/home/[user-name]/.local/bin/boost-mcp"
+args = []
+startup_timeout_sec = 60
+tool_timeout_sec = 180
