@@ -1,0 +1,83 @@
+# zapisz do ~/.local/bin/boost-mcp i nadaj uprawnieniach chmod +x ~/.local/bin/boost-mcp
+
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+NULL_MCP="$HOME/.local/bin/mcp-null"
+LARAVEL_ROOT_IN_CONTAINER="${BOOST_LARAVEL_ROOT_IN_CONTAINER:-/var/www/html}"
+
+LOG_FILE="${BOOST_MCP_LOG:-$HOME/.codex/logs/boost-mcp.log}"
+SERVER_ERR_LOG="${BOOST_MCP_SERVER_ERR_LOG:-$HOME/.codex/logs/boost-mcp.server.err.log}"
+mkdir -p "$(dirname "$LOG_FILE")" "$(dirname "$SERVER_ERR_LOG")"
+
+log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$LOG_FILE"; }
+
+find_container_file() {
+  local p="$PWD"
+  while [[ "$p" != "/" ]]; do
+    if [[ -f "$p/.codex/container" ]]; then echo "$p/.codex/container"; return 0; fi
+    if [[ -f "$p/.boost-container" ]]; then echo "$p/.boost-container"; return 0; fi
+    p="$(dirname "$p")"
+  done
+  return 1
+}
+
+# docker exec, ale BEZ stdin (żeby nie zjadać MCP initialize)
+DEXEC_NO_STDIN() {
+  docker exec "$CONTAINER_NAME" "$@" </dev/null
+}
+
+log "---- start ----"
+log "PWD=$PWD"
+log "LARAVEL_ROOT_IN_CONTAINER=$LARAVEL_ROOT_IN_CONTAINER"
+
+CONTAINER_FILE="$(find_container_file 2>/dev/null || true)"
+if [[ -z "${CONTAINER_FILE:-}" ]]; then
+  log "container file not found -> null MCP"
+  exec "$NULL_MCP"
+fi
+log "CONTAINER_FILE=$CONTAINER_FILE"
+
+CONTAINER_NAME="$(tr -d '\r\n' < "$CONTAINER_FILE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+if [[ -z "${CONTAINER_NAME:-}" ]]; then
+  log "container name empty -> null MCP"
+  exec "$NULL_MCP"
+fi
+log "CONTAINER_NAME=$CONTAINER_NAME"
+
+if ! docker inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
+  log "container not found -> null MCP"
+  exec "$NULL_MCP"
+fi
+
+# diagnostyka (do logu), BEZ stdin
+{
+  log "whoami/pwd:"
+  DEXEC_NO_STDIN whoami 2>>"$LOG_FILE" | sed 's/^/[container] /' >> "$LOG_FILE" || true
+  DEXEC_NO_STDIN pwd    2>>"$LOG_FILE" | sed 's/^/[container] /' >> "$LOG_FILE" || true
+
+  log "php -v:"
+  DEXEC_NO_STDIN php -v 2>>"$LOG_FILE" | head -n 3 | sed 's/^/[container] /' >> "$LOG_FILE" || true
+
+  log "ls -la $LARAVEL_ROOT_IN_CONTAINER (first 30):"
+  DEXEC_NO_STDIN ls -la "$LARAVEL_ROOT_IN_CONTAINER" 2>>"$LOG_FILE" | head -n 30 | sed 's/^/[container] /' >> "$LOG_FILE" || true
+} >/dev/null 2>&1 || true
+
+if ! DEXEC_NO_STDIN test -f "$LARAVEL_ROOT_IN_CONTAINER/artisan" >/dev/null 2>&1; then
+  log "artisan not found -> null MCP"
+  exec "$NULL_MCP"
+fi
+log "artisan found."
+
+if ! DEXEC_NO_STDIN composer --working-dir="$LARAVEL_ROOT_IN_CONTAINER" show laravel/boost >/dev/null 2>&1; then
+  log "laravel/boost not installed -> null MCP"
+  exec "$NULL_MCP"
+fi
+log "laravel/boost detected."
+
+: > "$SERVER_ERR_LOG"
+log "starting MCP server: docker exec -i $CONTAINER_NAME php $LARAVEL_ROOT_IN_CONTAINER/artisan boost:mcp"
+
+# TU dopiero podpinamy stdin (-i), bo to jest kanał MCP
+exec docker exec -i "$CONTAINER_NAME" php "$LARAVEL_ROOT_IN_CONTAINER/artisan" boost:mcp 2>>"$SERVER_ERR_LOG"
