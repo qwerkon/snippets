@@ -2,7 +2,7 @@
 
 ## Określenie rozmiarów i lokalizacji dystrybucji WSL
 
-Do uruhocmienia w PowerShell
+Do uruchomienia w PowerShell
 
 ```
 $LxssPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss"
@@ -32,7 +32,7 @@ Get-ChildItem $LxssPath | ForEach-Object {
 
 ## Optymalizacja WSL 
 
-Do uruhocmienia w PowerShell
+Do uruchomienia w PowerShell
 
 ```
 wsl -- sudo fstrim -av
